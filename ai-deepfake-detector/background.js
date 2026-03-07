@@ -35,7 +35,7 @@ async function handleAnalyzeImage(imageUrl, sendResponse) {
 
     console.log("Fetching context via Gemini API for image:", imageUrl);
     
-    const geminiApiKey = "AIzaSyB9lEU_2ondw2P6WAal8v0yGAZVKKDH9qI";
+    const geminiApiKey = "";
     const geminiPrompt = `Analyze this image (AI probability: ${(score*100).toFixed(1)}%). Explain specific visual artifacts or inconsistencies that indicate it is manipulated or synthetic.`;
     
     const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${geminiApiKey}`, {
