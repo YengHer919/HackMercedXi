@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Instagram AI Deepfake Detector",
+  "name": "social-media-ai-detector",
   "version": "1.0",
-  "description": "Analyzes images on Instagram to detect AI-generated or modified content.",
+  "description": "Analyzes images on social media to detect AI-generated or modified content.",
   "permissions": [
     "activeTab",
     "scripting",
@@ -10,20 +10,27 @@
   ],
   "host_permissions": [
     "*://*.instagram.com/*",
-    "https://generativelanguage.googleapis.com/*"
+    "*://*.twitter.com/*",
+    "*://*.x.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.openai.com/*"
   ],
   "background": {
     "service_worker": "background.js"
   },
   "content_scripts": [
     {
-      "matches": ["*://*.instagram.com/*"],
+      "matches": [
+        "*://*.instagram.com/*",
+        "*://*.twitter.com/*",
+        "*://*.x.com/*"
+      ],
       "js": ["content.js"],
       "css": ["styles.css"]
     }
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Deepfake Detector"
+    "default_title": "social-media-ai-detector"
   }
 }

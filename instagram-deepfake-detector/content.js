@@ -1,6 +1,6 @@
-// Content script injected into Instagram pages to add analysis buttons
+// Content script injected into social media pages to add analysis buttons
 
-console.log("Instagram AI Deepfake Detector content script loaded.");
+console.log("social-media-ai-detector content script loaded.");
 
 function init() {
   // Use a MutationObserver to detect new images loaded dynamically
@@ -31,7 +31,7 @@ function scanImages() {
     // Mark as processed immediately so we don't handle them multiple times
     img.classList.add('df-processed');
 
-    // Instagram images often load dynamically. We add a button if they're large enough.
+    // Social media images often load dynamically. We add a button if they're large enough.
     if (img.width > 200 && img.height > 200) {
       addOverlayButton(img);
     } else {
@@ -53,7 +53,7 @@ function addOverlayButton(img) {
   btn.innerHTML = `<span class="df-icon">🔍</span>`;
   btn.className = 'df-overlay-btn';
 
-  // Instagram images are often in dynamic containers. Appending to parent usually works best
+  // Social media images are often in dynamic containers. Appending to parent usually works best
   // if we force the parent to be relatively positioned.
   if (img.parentElement) {
     if (window.getComputedStyle(img.parentElement).position === 'static') {
