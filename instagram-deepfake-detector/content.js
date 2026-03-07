@@ -50,14 +50,14 @@ function scanImages() {
 function addOverlayButton(img) {
   // Create button
   const btn = document.createElement('button');
-  btn.innerHTML = `<span class="df-icon">🔍</span> Analyze AI`;
+  btn.innerHTML = `<span class="df-icon">🔍</span>`;
   btn.className = 'df-overlay-btn';
-  
+
   // Instagram images are often in dynamic containers. Appending to parent usually works best
   // if we force the parent to be relatively positioned.
   if (img.parentElement) {
     if (window.getComputedStyle(img.parentElement).position === 'static') {
-        img.parentElement.style.position = 'relative';
+      img.parentElement.style.position = 'relative';
     }
     img.parentElement.appendChild(btn);
   }
@@ -65,12 +65,12 @@ function addOverlayButton(img) {
   btn.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     // Hide previous popups
     const existing = document.getElementById('df-results-popup');
     if (existing) existing.remove();
 
-    btn.innerHTML = `<span class="df-icon">⏳</span> Analyzing...`;
+    btn.innerHTML = `<span class="df-icon">⏳</span>`;
     btn.disabled = true;
     btn.classList.add('analyzing');
 
@@ -81,21 +81,21 @@ function addOverlayButton(img) {
     }, (response) => {
       btn.disabled = false;
       btn.classList.remove('analyzing');
-      
+
       if (chrome.runtime.lastError) {
-          console.error("Error communicating with background:", chrome.runtime.lastError);
-          btn.innerHTML = `<span class="df-icon">❌</span> Error`;
-          showResultsPopup({ success: false, error: "Extension error. Please refresh." }, e.clientX, e.clientY);
-          return;
+        console.error("Error communicating with background:", chrome.runtime.lastError);
+        btn.innerHTML = `<span class="df-icon">❌</span>`;
+        showResultsPopup({ success: false, error: "Extension error. Please refresh." }, e.clientX, e.clientY);
+        return;
       }
-      
+
       // Update button text and show result
       if (response && response.success) {
         showResultsPopup(response, e.clientX, e.clientY);
-        btn.innerHTML = response.isFake ? 'AI Generated⚠️' : 'Authentic✅';
+        btn.innerHTML = response.isFake ? '⚠️' : '✅';
         btn.style.backgroundColor = response.isFake ? 'rgba(255, 68, 68, 0.9)' : 'rgba(68, 255, 68, 0.9)';
       } else {
-        btn.innerHTML = `<span class="df-icon">❌</span> Failed`;
+        btn.innerHTML = `<span class="df-icon">❌</span>`;
         showResultsPopup(response, e.clientX, e.clientY);
       }
     });
@@ -103,44 +103,44 @@ function addOverlayButton(img) {
 }
 
 function showResultsPopup(results, x, y) {
-    const popup = document.createElement('div');
-    popup.id = 'df-results-popup';
-    popup.className = 'df-popup df-animate-in';
-    
-    // Position near the click
-    popup.style.left = `${Math.min(x, window.innerWidth - 320)}px`;
-    popup.style.top = `${y + 20}px`;
+  const popup = document.createElement('div');
+  popup.id = 'df-results-popup';
+  popup.className = 'df-popup df-animate-in';
 
-    let html = `<div class="df-popup-header">AI Content Analysis</div>`;
-    html += `<div class="df-popup-body">`;
-    
-    if (results && results.success) {
-      html += `<div class="df-score-container">`;
-      html += `<span class="df-score-label">AI Probability:</span>`;
-      html += `<span class="df-score-value ${(results.score > 0.5 ? 'df-high' : 'df-low')}">${(results.score * 100).toFixed(1)}%</span>`;
-      html += `</div>`;
-      html += `<p class="df-explanation">${results.explanation || "No details provided."}</p>`;
-    } else {
-      const errorMsg = results && results.error ? results.error : "Failed to analyze image.";
-      html += `<div class="df-error-container">`;
-      html += `<span class="df-error-icon">⚠️</span>`;
-      html += `<p class="df-error-text">${errorMsg}</p>`;
-      html += `</div>`;
-    }
+  // Position near the click
+  popup.style.left = `${Math.min(x, window.innerWidth - 320)}px`;
+  popup.style.top = `${y + 20}px`;
+
+  let html = `<div class="df-popup-header">AI Content Analysis</div>`;
+  html += `<div class="df-popup-body">`;
+
+  if (results && results.success) {
+    html += `<div class="df-score-container">`;
+    html += `<span class="df-score-label">AI Probability:</span>`;
+    html += `<span class="df-score-value ${(results.score > 0.5 ? 'df-high' : 'df-low')}">${(results.score * 100).toFixed(1)}%</span>`;
     html += `</div>`;
+    html += `<p class="df-explanation">${results.explanation || "No details provided."}</p>`;
+  } else {
+    const errorMsg = results && results.error ? results.error : "Failed to analyze image.";
+    html += `<div class="df-error-container">`;
+    html += `<span class="df-error-icon">⚠️</span>`;
+    html += `<p class="df-error-text">${errorMsg}</p>`;
+    html += `</div>`;
+  }
+  html += `</div>`;
 
-    const closeBtn = document.createElement('button');
-    closeBtn.innerText = 'Dismiss';
-    closeBtn.className = 'df-close-btn';
-    closeBtn.addEventListener('click', () => {
-        popup.classList.add('df-animate-out');
-        setTimeout(() => popup.remove(), 200);
-    });
+  const closeBtn = document.createElement('button');
+  closeBtn.innerText = 'Dismiss';
+  closeBtn.className = 'df-close-btn';
+  closeBtn.addEventListener('click', () => {
+    popup.classList.add('df-animate-out');
+    setTimeout(() => popup.remove(), 200);
+  });
 
-    popup.innerHTML = html;
-    popup.appendChild(closeBtn);
-    
-    document.body.appendChild(popup);
+  popup.innerHTML = html;
+  popup.appendChild(closeBtn);
+
+  document.body.appendChild(popup);
 }
 
 // Start watching for images
