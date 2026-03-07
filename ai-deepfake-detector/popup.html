@@ -6,6 +6,67 @@
     <title>AI Deepfake Detector</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .settings-panel {
+            background: var(--surface, #1a1a2e);
+            border: 1px solid var(--border, #2a2a4a);
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .settings-panel h3 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .settings-panel label {
+            font-size: 11px;
+            color: #888;
+            display: block;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .settings-panel input {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border, #2a2a4a);
+            background: var(--bg, #0f0f1a);
+            color: #fff;
+            font-size: 12px;
+            font-family: monospace;
+            outline: none;
+        }
+
+        .settings-panel input:focus {
+            border-color: #4facfe;
+        }
+
+        .save-btn {
+            padding: 8px;
+            border-radius: 6px;
+            border: none;
+            background: linear-gradient(135deg, #00f2fe, #4facfe);
+            color: #000;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .save-status {
+            font-size: 11px;
+            text-align: center;
+            color: #00e5a0;
+            min-height: 16px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -73,6 +134,21 @@
                     <h3>Related Sources</h3>
                     <ul id="sources-list"></ul>
                 </div>
+            </div>
+
+            <!-- Settings Panel (hidden by default) -->
+            <div id="settings-panel" class="settings-panel hidden">
+                <h3>API Keys</h3>
+                <div>
+                    <label>Gemini API Key</label>
+                    <input type="password" id="geminiKeyInput" placeholder="AIzaSy..." autocomplete="off" />
+                </div>
+                <div>
+                    <label>Reality Defender API Key</label>
+                    <input type="password" id="rdKeyInput" placeholder="rd_..." autocomplete="off" />
+                </div>
+                <button class="save-btn" id="saveKeys">Save Keys</button>
+                <p class="save-status" id="save-status"></p>
             </div>
         </main>
         

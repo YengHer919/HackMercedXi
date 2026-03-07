@@ -80,3 +80,26 @@ document.addEventListener('DOMContentLoaded', () => {
         explanationText.textContent = data.explanation;
     }
 });
+
+// Toggle settings panel
+document.getElementById('settings-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('settings-panel').classList.toggle('hidden');
+});
+
+// Load saved keys into inputs
+chrome.storage.local.get(['geminiApiKey', 'rdApiKey'], (result) => {
+    if (result.geminiApiKey) document.getElementById('geminiKeyInput').value = result.geminiApiKey;
+    if (result.rdApiKey) document.getElementById('rdKeyInput').value = result.rdApiKey;
+});
+
+// Save keys
+document.getElementById('saveKeys').addEventListener('click', () => {
+    const geminiApiKey = document.getElementById('geminiKeyInput').value.trim();
+    const rdApiKey = document.getElementById('rdKeyInput').value.trim();
+    chrome.storage.local.set({ geminiApiKey, rdApiKey }, () => {
+        const status = document.getElementById('save-status');
+        status.textContent = '✓ Keys saved';
+        setTimeout(() => status.textContent = '', 2500);
+    });
+});
