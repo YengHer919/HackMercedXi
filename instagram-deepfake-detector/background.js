@@ -1,9 +1,7 @@
 // Service worker for social-media-ai-detector
 
-//Replace this with your actual Gemini API key
-const GEMINI_API_KEY = "secretkey";
-//Replace this with your actual OpenAI API key for fallback
-const OPENAI_API_KEY = "secretkey";
+const GEMINI_API_KEY = "[ENCRYPTION_KEY]";
+const OPENAI_API_KEY = "[ENCRYPTION_KEY]";
 
 let model = "gemini";
 
