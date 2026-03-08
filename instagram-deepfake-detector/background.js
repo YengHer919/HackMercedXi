@@ -1,4 +1,6 @@
 // Service worker for social-media-ai-detector
+const GEMINI_API_KEY = "[ENCRYPTION_KEY]";
+const OPENAI_API_KEY = "[ENCRYPTION_KEY]";
 
 let model = "gemini";
 

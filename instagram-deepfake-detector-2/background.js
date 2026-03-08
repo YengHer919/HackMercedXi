@@ -1,5 +1,6 @@
 // Service worker for Instagram AI Deepfake Detector
 
+const HF_API_KEY = "[ENCRYPTION_KEY]";
 
 // Listen for messages from content scripts or popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
