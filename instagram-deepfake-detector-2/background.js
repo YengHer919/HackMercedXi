@@ -1,7 +1,7 @@
 // Service worker for Instagram AI Deepfake Detector
 
 // TODO: Replace this with your actual HuggingFace API token if needed
-const HF_API_KEY = "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";
+const HF_API_KEY = "nokey";
 
 // Listen for messages from content scripts or popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
