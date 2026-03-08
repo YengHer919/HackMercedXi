@@ -1,9 +1,9 @@
 // Service worker for social-media-ai-detector
 
 //Replace this with your actual Gemini API key
-const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE";
+const GEMINI_API_KEY = "secretkey";
 //Replace this with your actual OpenAI API key for fallback
-const OPENAI_API_KEY = "YOUR_OPENAI_API_KEY_HERE";
+const OPENAI_API_KEY = "secretkey";
 
 let model = "gemini";
 
@@ -54,7 +54,7 @@ async function geminiModel(imageUrl, sendResponse) {
     // 1. Use hardcoded Gemini API Key
     const apiKey = GEMINI_API_KEY;
 
-    if (!apiKey || apiKey === "YOUR_GEMINI_API_KEY_HERE") {
+    if (!apiKey || apiKey === "secretkey") {
       sendResponse({
         success: false,
         error: "Gemini API Key missing."
@@ -144,7 +144,7 @@ async function geminiModel(imageUrl, sendResponse) {
 async function handleOpenAIAnalysis(imageData, sendResponse) {
   const apiKey = OPENAI_API_KEY;
 
-  if (!apiKey || apiKey === "YOUR_OPENAI_API_KEY_HERE") {
+  if (!apiKey || apiKey === "secretkey") {
     throw new Error("OpenAI API Key missing");
   }
 
