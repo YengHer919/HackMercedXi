@@ -1,9 +1,9 @@
 // Service worker for social-media-ai-detector
 
 //Replace this with Gemini API key
-const GEMINI_API_KEY = "AIzaSyAHShBuaQwhaG9xSNSb7O5JLphz3dKPtEE";
+const GEMINI_API_KEY = "API_KEY";
 //Replace this with OpenAI API key
-const OPENAI_API_KEY = "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";
+const OPENAI_API_KEY = "API_KEY";
 
 let model = "gemini";
 
