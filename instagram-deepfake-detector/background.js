@@ -24,8 +24,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     handleAnalyzeVideoFrames(request.frames, sendResponse).catch(err => {
       console.error("Critical error in video analysis:", err);
       sendResponse({ success: false, error: "Internal extension error." });
-      return true;
     });
+    return true;
   }
 });
 
@@ -251,11 +251,11 @@ async function handleAnalyzeVideoFrames(frames, sendResponse) {
   try {
     console.log(`Attempting to analyze ${frames.length} video frames`);
 
-    // 1. Get the Gemini API Key from storage
+    // 1. Get the Gemini API Key from storage, fallback to hardcoded
     const storageResult = await chrome.storage.local.get(['geminiApiKey']);
-    const apiKey = storageResult.geminiApiKey;
+    const apiKey = storageResult.geminiApiKey || GEMINI_API_KEY;
 
-    if (!apiKey) {
+    if (!apiKey || apiKey === "YOUR_GEMINI_API_KEY_HERE") {
       sendResponse({
         success: false,
         error: "Gemini API Key missing. Please set it in the extension popup."
