@@ -1,14 +1,24 @@
 // Service worker for social-media-ai-detector
 
-// TODO: Replace this with your actual Gemini API key
+//Replace this with your actual Gemini API key
 const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE";
-// TODO: Replace this with your actual OpenAI API key for fallback
+//Replace this with your actual OpenAI API key for fallback
 const OPENAI_API_KEY = "YOUR_OPENAI_API_KEY_HERE";
+
+let model = "gemini";
 
 // Listen for messages from content scripts or popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'analyzeImage') {
-    handleAnalyzeImage(request.imageUrl, sendResponse);
+  if (request.type === "UPDATE_SETTING") {
+    console.log("Background script processing:", request.data);
+    model = request.data;
+  } else if (request.action === 'analyzeImage' && model === "gemini") {
+    geminiModel(request.imageUrl, sendResponse);
+    console.log("gemini");
+    return true; // Indicates we will respond asynchronously
+  } else if (request.action === 'analyzeImage' && model === "openai") {
+    handleOpenAIAnalysis(request.imageUrl, sendResponse);
+    console.log("openai");
     return true; // Indicates we will respond asynchronously
   }
 });
@@ -37,7 +47,7 @@ async function getBase64FromUrl(url) {
   }
 }
 
-async function handleAnalyzeImage(imageUrl, sendResponse) {
+async function geminiModel(imageUrl, sendResponse) {
   try {
     console.log("Attempting to analyze image URL:", imageUrl);
 
@@ -47,7 +57,7 @@ async function handleAnalyzeImage(imageUrl, sendResponse) {
     if (!apiKey || apiKey === "YOUR_GEMINI_API_KEY_HERE") {
       sendResponse({
         success: false,
-        error: "Gemini API Key missing. Please hardcode it in background.js."
+        error: "Gemini API Key missing."
       });
       return;
     }
@@ -120,21 +130,22 @@ async function handleAnalyzeImage(imageUrl, sendResponse) {
     }
 
   } catch (error) {
-    console.error("Gemini Analysis failed, attempting OpenAI fallback:", error);
+    console.error("Gemini Analysis failed, attempting backup fallback:", error);
     try {
       await handleOpenAIAnalysis(imageData, sendResponse);
     } catch (fallbackError) {
-      console.error("OpenAI Fallback failed:", fallbackError);
-      sendResponse({ success: false, error: "Both Gemini and OpenAI analysis failed." });
+      console.error("Fallback failed:", fallbackError);
+      sendResponse({ success: false, error: "Both Gemini and fallback analysis failed." });
     }
   }
 }
+
 
 async function handleOpenAIAnalysis(imageData, sendResponse) {
   const apiKey = OPENAI_API_KEY;
 
   if (!apiKey || apiKey === "YOUR_OPENAI_API_KEY_HERE") {
-    throw new Error("OpenAI API Key missing for fallback.");
+    throw new Error("OpenAI API Key missing");
   }
 
   const endpoint = "https://api.openai.com/v1/chat/completions";
@@ -199,4 +210,9 @@ async function handleOpenAIAnalysis(imageData, sendResponse) {
     console.error("Failed to parse OpenAI JSON:", parseErr, rawText);
     throw new Error("Failed to parse OpenAI API response.");
   }
+}
+
+
+async function modelChange(changeTo) {
+
 }
