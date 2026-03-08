@@ -10,12 +10,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log("Background script processing:", request.data);
     model = request.data;
   } else if (request.action === 'analyzeImage' && model === "gemini") {
-    geminiModel(request.imageUrl, sendResponse);
     console.log("gemini");
+    geminiModel(request.imageUrl, sendResponse, false);
     return true; // Indicates we will respond asynchronously
   } else if (request.action === 'analyzeImage' && model === "openai") {
-    handleOpenAIAnalysis(request.imageUrl, sendResponse);
     console.log("openai");
+    handleOpenAIAnalysis(request.imageUrl, sendResponse, false);
     return true; // Indicates we will respond asynchronously
   }
 });
@@ -44,7 +44,17 @@ async function getBase64FromUrl(url) {
   }
 }
 
-async function geminiModel(imageUrl, sendResponse) {
+async function useFallback(imageData, sendResponse, fallback) {
+  if (fallback === "openai") {
+    handleOpenAIAnalysis(imageData, sendResponse, true);
+  } else if (fallback === "gemini") {
+    geminiModel(imageData, sendResponse, true);
+  }
+}
+
+async function geminiModel(imageUrl, sendResponse, isfallback) {
+  let fallback = "openai";
+
   try {
     console.log("Attempting to analyze image URL:", imageUrl);
 
@@ -127,9 +137,12 @@ async function geminiModel(imageUrl, sendResponse) {
     }
 
   } catch (error) {
+    if (isfallback) {
+      sendResponse({ success: false, error: "Fallback analysis failed." });
+    }
     console.error("Gemini Analysis failed, attempting backup fallback:", error);
     try {
-      await handleOpenAIAnalysis(imageData, sendResponse);
+      await useFallback(imageData, sendResponse, fallback);
     } catch (fallbackError) {
       console.error("Fallback failed:", fallbackError);
       sendResponse({ success: false, error: "Both Gemini and fallback analysis failed." });
@@ -138,74 +151,88 @@ async function geminiModel(imageUrl, sendResponse) {
 }
 
 
-async function handleOpenAIAnalysis(imageData, sendResponse) {
+async function handleOpenAIAnalysis(imageData, sendResponse, isfallback) {
+  let fallback = "gemini";
   const apiKey = OPENAI_API_KEY;
+  try {
 
-  if (!apiKey || apiKey === "secretkey") {
-    throw new Error("OpenAI API Key missing");
-  }
+    if (!apiKey || apiKey === "secretkey") {
+      throw new Error("OpenAI API Key missing");
+    }
 
-  const endpoint = "https://api.openai.com/v1/chat/completions";
-  const promptText = `
+    const endpoint = "https://api.openai.com/v1/chat/completions";
+    const promptText = `
     Analyze the provided image to determine if it is likely AI-generated, deepfaked, or heavily manipulated by AI.
     Return ONLY a valid JSON object with exactly these two keys:
     - "probability": A number between 0.0 and 1.0 indicating the likelihood that the image is AI-generated (1.0 = highly likely AI, 0.0 = highly likely real).
     - "explanation": A 2-3 sentence clear string explaining the specific visual artifacts, lighting inconsistencies, or reasons why you gave it that score.
   `;
 
-  // Format data for OpenAI Vision
-  const base64ImageUrl = `data:${imageData.mimeType};base64,${imageData.data}`;
+    // Format data for OpenAI Vision
+    const base64ImageUrl = `data:${imageData.mimeType};base64,${imageData.data}`;
 
-  const requestBody = {
-    model: "gpt-5-nano",
-    response_format: { type: "json_object" },
-    messages: [
-      {
-        role: "user",
-        content: [
-          { type: "text", text: promptText },
-          {
-            type: "image_url",
-            image_url: {
-              url: base64ImageUrl
+    const requestBody = {
+      model: "gpt-5-nano",
+      response_format: { type: "json_object" },
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: promptText },
+            {
+              type: "image_url",
+              image_url: {
+                url: base64ImageUrl
+              }
             }
-          }
-        ]
-      }
-    ],
-    max_tokens: 300
-  };
+          ]
+        }
+      ],
+      max_tokens: 300
+    };
 
-  const apiResponse = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`
-    },
-    body: JSON.stringify(requestBody)
-  });
-
-  if (!apiResponse.ok) {
-    const errData = await apiResponse.json();
-    throw new Error(errData.error?.message || `OpenAI API Error: ${apiResponse.status}`);
-  }
-
-  const resultData = await apiResponse.json();
-  const rawText = resultData.choices[0].message.content;
-
-  try {
-    const resultJson = JSON.parse(rawText);
-    const score = resultJson.probability || 0;
-
-    sendResponse({
-      success: true,
-      score: score,
-      isFake: score > 0.6,
-      explanation: (resultJson.explanation || "No explanation provided.") + " (Used OpenAI Fallback)"
+    const apiResponse = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(requestBody)
     });
-  } catch (parseErr) {
-    console.error("Failed to parse OpenAI JSON:", parseErr, rawText);
-    throw new Error("Failed to parse OpenAI API response.");
+
+    if (!apiResponse.ok) {
+      const errData = await apiResponse.json();
+      throw new Error(errData.error?.message || `OpenAI API Error: ${apiResponse.status}`);
+    }
+
+    const resultData = await apiResponse.json();
+    const rawText = resultData.choices[0].message.content;
+
+    try {
+      const resultJson = JSON.parse(rawText);
+      const score = resultJson.probability || 0;
+
+      sendResponse({
+        success: true,
+        score: score,
+        isFake: score > 0.6,
+        explanation: (resultJson.explanation || "No explanation provided.") + " (Used OpenAI Fallback)"
+      });
+    } catch (parseErr) {
+      console.error("Failed to parse OpenAI JSON:", parseErr, rawText);
+      throw new Error("Failed to parse OpenAI API response.");
+    }
+  } catch (err) {
+    if (isfallback) {
+      sendResponse({ success: false, error: "Fallback analysis failed." });
+    }
+    console.error("OpenAI Analysis failed, attempting backup fallback:", err);
+    try {
+      await useFallback(imageData, sendResponse, fallback);
+    } catch (fallbackError) {
+      console.error("Fallback failed:", fallbackError);
+      sendResponse({ success: false, error: "Both Gemini and fallback analysis failed." });
+    }
   }
 }
 
